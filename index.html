@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stock Market Analysis Dashboard</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #182230;
+      --muted: #667085;
+      --line: #d0d5dd;
+      --blue: #1f6feb;
+      --green: #14804a;
+      --red: #c0362c;
+      --amber: #b76e00;
+      --shadow: 0 18px 55px rgba(16, 24, 40, 0.09);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, sans-serif;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: min(100%, 390px);
+      padding: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 6px 22px rgba(16, 24, 40, 0.06);
+    }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      height: 42px;
+      border: 0;
+      outline: 0;
+      padding: 0 12px;
+      color: var(--ink);
+      font-size: 18px;
+      text-transform: uppercase;
+      background: transparent;
+    }
+
+    button {
+      height: 42px;
+      border: 0;
+      border-radius: 7px;
+      padding: 0 16px;
+      color: white;
+      background: var(--blue);
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      filter: brightness(0.95);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .metric,
+    .chart-wrap,
+    .analysis {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      padding: 16px;
+      min-height: 98px;
+    }
+
+    .metric span {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: clamp(20px, 2.5vw, 30px);
+      line-height: 1.12;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .chart-wrap {
+      padding: 18px;
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--blue);
+    }
+
+    .swatch.ma50 {
+      background: var(--amber);
+    }
+
+    .swatch.ma200 {
+      background: var(--green);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 470px;
+      border-radius: 6px;
+      background: #fbfcff;
+    }
+
+    .analysis {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 0;
+      margin-top: 14px;
+      overflow: hidden;
+    }
+
+    .trend {
+      padding: 22px;
+      border-right: 1px solid var(--line);
+    }
+
+    .trend strong {
+      display: block;
+      margin-top: 10px;
+      font-size: clamp(26px, 4vw, 46px);
+      line-height: 1;
+    }
+
+    .trend.up strong {
+      color: var(--green);
+    }
+
+    .trend.down strong {
+      color: var(--red);
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
+    }
+
+    .note {
+      padding: 18px;
+      background: var(--panel);
+      min-height: 118px;
+    }
+
+    .note b {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .note p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 860px) {
+      .topbar,
+      .chart-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .summary,
+      .analysis,
+      .notes {
+        grid-template-columns: 1fr;
+      }
+
+      .trend {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .legend {
+        justify-content: flex-start;
+      }
+
+      canvas {
+        height: 360px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>Stock Market Analysis Dashboard</h1>
+      </div>
+      <form class="search" id="stockForm">
+        <input id="symbolInput" value="AAPL" aria-label="Stock symbol" autocomplete="off">
+        <button type="submit">Analyze</button>
+      </form>
+    </div>
+
+    <section class="summary" aria-label="Stock summary">
+      <div class="metric">
+        <span>Stock Symbol</span>
+        <strong id="symbolLabel">AAPL</strong>
+        <small>Updates after analysis</small>
+      </div>
+      <div class="metric">
+        <span>Latest Price</span>
+        <strong id="lastPrice">$0.00</strong>
+        <small id="lastDate">-</small>
+      </div>
+      <div class="metric">
+        <span>50-Day Moving Average</span>
+        <strong id="ma50Value">$0.00</strong>
+        <small>Short-to-medium trend</small>
+      </div>
+      <div class="metric">
+        <span>200-Day Moving Average</span>
+        <strong id="ma200Value">$0.00</strong>
+        <small>Long-term trend</small>
+      </div>
+    </section>
+
+    <section class="chart-wrap">
+      <div class="chart-head">
+        <div>
+          <h2>Stock Price Chart</h2>
+          <p class="hint">Blue shows closing price, orange shows the 50-day average, and green shows the 200-day average.</p>
+        </div>
+        <div class="legend">
+          <span><i class="swatch"></i>Closing Price</span>
+          <span><i class="swatch ma50"></i>50-Day MA</span>
+          <span><i class="swatch ma200"></i>200-Day MA</span>
+        </div>
+      </div>
+      <canvas id="stockChart" width="1200" height="520"></canvas>
+    </section>
+
+    <section class="analysis">
+      <div class="trend" id="trendBox">
+        <span>Price Trend</span>
+        <strong id="trendText">-</strong>
+      </div>
+      <div class="notes">
+        <div class="note">
+          <b>Price Position</b>
+          <p id="priceNote">-</p>
+        </div>
+        <div class="note">
+          <b>Moving Average Setup</b>
+          <p id="maNote">-</p>
+        </div>
+        <div class="note">
+          <b>Recent Change</b>
+          <p id="changeNote">-</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("stockChart");
+    const ctx = canvas.getContext("2d");
+    const form = document.getElementById("stockForm");
+    const input = document.getElementById("symbolInput");
+
+    function seededRandom(seed) {
+      let value = seed;
+      return function random() {
+        value = (value * 9301 + 49297) % 233280;
+        return value / 233280;
+      };
+    }
+
+    function makeStockData(symbol) {
+      const seed = symbol.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+      const random = seededRandom(seed);
+      const start = symbol === "AAPL" ? 164 : 55 + (seed % 170);
+      const points = [];
+      const today = new Date();
+      let price = start;
+
+      for (let i = 279; i >= 0; i -= 1) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const drift = symbol === "AAPL" ? 0.075 : ((seed % 7) - 2) / 100;
+        const wave = Math.sin((280 - i) / 18) * 0.55;
+        const noise = (random() - 0.48) * 2.6;
+        price = Math.max(8, price + drift + wave + noise);
+        points.push({
+          date,
+          close: Number(price.toFixed(2))
+        });
+      }
+
+      return points;
+    }
+
+    function movingAverage(data, days) {
+      return data.map((point, index) => {
+        if (index < days - 1) return null;
+        const slice = data.slice(index - days + 1, index + 1);
+        const total = slice.reduce((sum, item) => sum + item.close, 0);
+        return Number((total / days).toFixed(2));
+      });
+    }
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD"
+      }).format(value);
+    }
+
+    function drawLine(values, scale, color, width) {
+      ctx.beginPath();
+      let started = false;
+      values.forEach((value, index) => {
+        if (value === null || Number.isNaN(value)) return;
+        const x = scale.x(index);
+        const y = scale.y(value);
+        if (!started) {
+          ctx.moveTo(x, y);
+          started = true;
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+    }
+
+    function drawChart(data, ma50, ma200) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const width = rect.width;
+      const height = rect.height;
+      const pad = { top: 28, right: 64, bottom: 52, left: 58 };
+      const values = data.map(item => item.close).concat(ma50, ma200).filter(Boolean);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const buffer = Math.max(4, (max - min) * 0.12);
+      const low = min - buffer;
+      const high = max + buffer;
+
+      const scale = {
+        x(index) {
+          return pad.left + (index / (data.length - 1)) * (width - pad.left - pad.right);
+        },
+        y(value) {
+          return pad.top + ((high - value) / (high - low)) * (height - pad.top - pad.bottom);
+        }
+      };
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#fbfcff";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "#e4e7ec";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#667085";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i <= 5; i += 1) {
+        const value = low + ((high - low) / 5) * i;
+        const y = scale.y(value);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+        ctx.stroke();
+        ctx.fillText(`$${value.toFixed(0)}`, pad.left - 10, y);
+      }
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const ticks = [0, Math.floor(data.length * 0.25), Math.floor(data.length * 0.5), Math.floor(data.length * 0.75), data.length - 1];
+      ticks.forEach(index => {
+        const x = scale.x(index);
+        const label = data[index].date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        ctx.fillText(label, x, height - pad.bottom + 18);
+      });
+
+      drawLine(data.map(item => item.close), scale, "#1f6feb", 2.6);
+      drawLine(ma50, scale, "#b76e00", 2.1);
+      drawLine(ma200, scale, "#14804a", 2.1);
+    }
+
+    function analyze(symbol) {
+      const data = makeStockData(symbol);
+      const ma50 = movingAverage(data, 50);
+      const ma200 = movingAverage(data, 200);
+      const latest = data[data.length - 1];
+      const previous = data[data.length - 21];
+      const latestMa50 = ma50[ma50.length - 1];
+      const latestMa200 = ma200[ma200.length - 1];
+      const change = ((latest.close - previous.close) / previous.close) * 100;
+      const bullish = latest.close >= latestMa50 && latestMa50 >= latestMa200;
+      const bearish = latest.close < latestMa50 && latestMa50 < latestMa200;
+
+      document.getElementById("symbolLabel").textContent = symbol;
+      document.getElementById("lastPrice").textContent = formatMoney(latest.close);
+      document.getElementById("lastDate").textContent = latest.date.toLocaleDateString("en-US");
+      document.getElementById("ma50Value").textContent = formatMoney(latestMa50);
+      document.getElementById("ma200Value").textContent = formatMoney(latestMa200);
+
+      const trendBox = document.getElementById("trendBox");
+      trendBox.className = "trend";
+      if (bullish) {
+        trendBox.classList.add("up");
+        document.getElementById("trendText").textContent = "Uptrend";
+      } else if (bearish) {
+        trendBox.classList.add("down");
+        document.getElementById("trendText").textContent = "Downtrend";
+      } else {
+        document.getElementById("trendText").textContent = "Sideways";
+      }
+
+      document.getElementById("priceNote").textContent =
+        latest.close >= latestMa50
+          ? `The current price is ${formatMoney(latest.close - latestMa50)} above the 50-day moving average.`
+          : `The current price is ${formatMoney(latestMa50 - latest.close)} below the 50-day moving average.`;
+
+      document.getElementById("maNote").textContent =
+        latestMa50 >= latestMa200
+          ? "The 50-day moving average is above the 200-day moving average, suggesting a stronger long-term setup."
+          : "The 50-day moving average is below the 200-day moving average, suggesting a weaker long-term setup.";
+
+      document.getElementById("changeNote").textContent =
+        `The stock has changed ${change >= 0 ? "+" : ""}${change.toFixed(2)}% over the last 20 trading days.`;
+
+      drawChart(data, ma50, ma200);
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const symbol = input.value.trim().toUpperCase() || "AAPL";
+      input.value = symbol;
+      analyze(symbol);
+    });
+
+    window.addEventListener("resize", () => analyze(input.value.trim().toUpperCase() || "AAPL"));
+    analyze("AAPL");
+  </script>
+</body>
+</html>
