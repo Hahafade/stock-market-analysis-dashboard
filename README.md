@@ -25,3 +25,7 @@ An interactive stock market analysis dashboard built using Python and financial 
 2. Enter a stock symbol (example: AAPL)
 3. Click Analyze
 4. View stock trends and moving average analytics
+
+## Dashboard Preview
+
+![Dashboard Screenshot](dashboard-preview.png)
