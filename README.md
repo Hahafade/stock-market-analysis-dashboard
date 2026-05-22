@@ -1,16 +1,27 @@
 # Stock Market Analysis Dashboard
 
-Open `index.html`, then enter a stock symbol such as:
+An interactive stock market analysis dashboard built using Python and financial market data visualization tools.
 
-```text
-AAPL
-```
+## Features
 
-The page displays:
-
-- Stock price chart
+- Real-time stock symbol analysis
+- Historical stock price visualization
 - 50-day moving average
 - 200-day moving average
-- Price trend
+- Trend analysis indicators
+- Interactive dashboard interface
 
-This version does not require installation. Open it directly in a browser.
+## Technologies Used
+
+- Python
+- Pandas
+- yfinance
+- Matplotlib
+- HTML/CSS
+
+## How to Use
+
+1. Open `index.html`
+2. Enter a stock symbol (example: AAPL)
+3. Click Analyze
+4. View stock trends and moving average analytics
